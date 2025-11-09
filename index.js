@@ -10,22 +10,31 @@ app.get("/proxy", async (req, res) => {
   try {
     const response = await fetch(url, {
       headers: {
+        "Host": "edge2caster.pro",
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:139.0) Gecko/20100101 Firefox/139.0",
+        "Accept": "*/*",
+        "Accept-Language": "en-US",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
         "Origin": "https://streamcenter.pro",
-        "Referer": "https://streamcenter.pro/"
+        "Connection": "keep-alive",
+        "Referer": "https://streamcenter.pro/",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "cross-site"
       }
     });
 
-    // Pass through headers and CORS
+    const contentType = response.headers.get("content-type") || "application/octet-stream";
     res.set("Access-Control-Allow-Origin", "*");
-    res.set("Content-Type", response.headers.get("content-type") || "application/octet-stream");
+    res.set("Content-Type", contentType);
 
-    const body = await response.arrayBuffer();
-    res.send(Buffer.from(body));
+    const buffer = Buffer.from(await response.arrayBuffer());
+    res.send(buffer);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Proxy error");
+    res.status(500).send("Proxy fetch failed");
   }
 });
 
-app.listen(10000, () => console.log("Proxy server running on port 10000"));
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log("Proxy running on port " + PORT));
