@@ -52,7 +52,7 @@ app.get("/proxy", async (req, res) => {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
         "Accept": "*/*",
-        "Origin": "https://test.renden.com",
+        "Origin": "https://proxy-9n3v.onrender.com",
       },
       agent,
       timeout: 10000
