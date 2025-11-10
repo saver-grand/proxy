@@ -1,15 +1,17 @@
 import express from "express";
 import fetch from "node-fetch";
-import HttpsProxyAgent from "https-proxy-agent";
+import { HttpsProxyAgent } from "https-proxy-agent"; // ✅ Correct import for v7+
 
 const app = express();
 let proxyPool = [];
 
-// 🌀 Auto-fetch free proxy IPs every hour
+// 🌀 Auto-fetch free HTTP proxies every hour
 async function updateProxyList() {
   try {
     console.log("🔄 Updating proxy list...");
-    const res = await fetch("https://api.proxyscrape.com/v2/?request=getproxies&protocol=http&timeout=2000&country=all");
+    const res = await fetch(
+      "https://api.proxyscrape.com/v2/?request=getproxies&protocol=http&timeout=2000&country=all"
+    );
     const text = await res.text();
     proxyPool = text
       .split("\n")
@@ -21,7 +23,7 @@ async function updateProxyList() {
   }
 }
 
-// Load proxies on start and refresh hourly
+// Load proxies initially + refresh every hour
 updateProxyList();
 setInterval(updateProxyList, 60 * 60 * 1000);
 
@@ -35,35 +37,38 @@ function getRandomProxy() {
 
 // ───────────────────────────────────────────────
 // 🎯 Proxy endpoint
-// Example: /proxy?url=https://example.com/playlist.m3u8
+// Usage: /proxy?url=https://example.com/playlist.m3u8
 // ───────────────────────────────────────────────
 app.get("/proxy", async (req, res) => {
   const targetUrl = req.query.url;
   if (!targetUrl) return res.status(400).send("Missing ?url=");
 
+  let response;
   try {
     const proxy = getRandomProxy();
     const agent = proxy ? new HttpsProxyAgent(proxy) : undefined;
 
-    const response = await fetch(targetUrl, {
+    response = await fetch(targetUrl, {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
         "Accept": "*/*",
         "Origin": "https://test.renden.com",
       },
       agent,
+      timeout: 10000
     });
 
+    // If proxy fetch fails, fallback to direct request
     if (!response.ok) {
-      return res.status(response.status).send(`Upstream error (${response.status})`);
+      console.warn(`⚠️ Proxy failed (${response.status}), trying direct...`);
+      response = await fetch(targetUrl);
     }
 
-    // Forward headers and stream response
     res.set("Access-Control-Allow-Origin", "*");
     res.set("Content-Type", response.headers.get("content-type"));
     response.body.pipe(res);
   } catch (err) {
-    console.error("Proxy error:", err.message);
+    console.error("❌ Proxy error:", err.message);
     res.status(500).send("Proxy error: " + err.message);
   }
 });
