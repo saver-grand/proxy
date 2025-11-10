@@ -1,7 +1,7 @@
 {
   "name": "iptv-rotating-proxy",
   "version": "1.0.0",
-  "description": "IPTV proxy server with ClearKey DRM and rotating outbound IP support for Render.",
+  "description": "IPTV proxy server with ClearKey DRM and rotating IP support for Render.",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -20,7 +20,9 @@
     "proxy",
     "clearkey",
     "render",
-    "ip-rotation"
+    "ip-rotation",
+    "m3u",
+    "drm"
   ],
   "author": "YourName",
   "license": "MIT"
