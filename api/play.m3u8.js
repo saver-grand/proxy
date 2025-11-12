@@ -13,6 +13,7 @@ export default function handler(req, res) {
     return;
   }
 
+  // Build proxy HLS playlist
   const m3u8Content = `#EXTM3U
 #EXT-X-VERSION:3
 #EXT-X-TARGETDURATION:10
@@ -21,6 +22,11 @@ export default function handler(req, res) {
 ${streamUrl}
 #EXT-X-ENDLIST`;
 
+  // Set headers for universal playback
   res.setHeader("Content-Type", "application/vnd.apple.mpegurl");
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+
   res.status(200).send(m3u8Content);
 }
