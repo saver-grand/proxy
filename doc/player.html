@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HLS Player (proxy)</title>
+  <style>html,body{height:100%;margin:0;background:#000}video{width:100%;height:100%;background:#000;display:block}</style>
+</head>
+<body>
+  <video id="video" controls playsinline></video>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.1/dist/hls.min.js"></script>
+  <script>
+    const video = document.getElementById('video');
+
+    // Replace these placeholders:
+    //  - RENDER_HOST: your Render service domain (e.g. https://your-service.onrender.com)
+    //  - SOURCE_HOST and SOURCE_PATH: the upstream .m3u8 host/path
+    //
+    // Example:
+    //   SOURCE_HOST = 'gg.poocloud.in'
+    //   SOURCE_PATH = 'nba_minnesotatimberwolves/index.m3u8'
+    //
+    // Resulting proxied URL:
+    //   https://RENDER_HOST/proxy/gg.poocloud.in/nba_minnesotatimberwolves/index.m3u8
+
+    const RENDER_HOST = 'RENDER_HOST_HERE'; // e.g. your-service.onrender.com (no trailing slash)
+    const SOURCE_HOST = 'gg.poocloud.in';
+    const SOURCE_PATH = 'nba_minnesotatimberwolves/index.m3u8';
+
+    const proxied = `https://${RENDER_HOST}/proxy/${SOURCE_HOST}/${SOURCE_PATH}`;
+
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = proxied;
+      video.play().catch(()=>{});
+    } else if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(proxied);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.ERROR, function(event, data) {
+        console.error('hls.js error', event, data);
+      });
+    } else {
+      document.body.innerHTML = '<p style="color:white;background:#900;padding:1rem;">No HLS support</p>';
+    }
+  </script>
+</body>
+</html>
