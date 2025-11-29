@@ -2,10 +2,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# COPY ONLY package.json (no lock file required)
 COPY package.json ./
 
-# Install production dependencies
 RUN npm install --omit=dev
 
 COPY . .
