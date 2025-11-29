@@ -2,7 +2,7 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install CA certificates
+# Install CA certificates (optional, keeps Alpine happy)
 RUN apk add --no-cache ca-certificates
 
 COPY package.json ./
