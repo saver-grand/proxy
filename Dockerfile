@@ -1,11 +1,12 @@
-# Use official Node LTS
 FROM node:20-alpine
 
 WORKDIR /app
 
-# copy package first for docker layer caching
-COPY package.json package-lock.json* ./
-RUN npm ci --production
+# COPY ONLY package.json (no lock file required)
+COPY package.json ./
+
+# Install production dependencies
+RUN npm install --omit=dev
 
 COPY . .
 
