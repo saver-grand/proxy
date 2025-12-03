@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: mpd-restream
+    env: node
+    buildCommand: "npm install"
+    startCommand: "node server.js"
+    envVars:
+      - key: INPUT_MPD
+        sync: false
+      - key: DEVICE_ID
+        sync: false
