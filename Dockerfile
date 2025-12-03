@@ -1,15 +1,10 @@
-FROM node:20-alpine
+FROM node:18
 
 WORKDIR /app
+COPY package*.json ./
+RUN npm install
 
-# Install CA certificates for HTTPS
-RUN apk add --no-cache ca-certificates
-
-COPY package.json ./
-RUN npm install --omit=dev
 COPY . .
 
-EXPOSE 10000
-ENV PORT=10000
-
+EXPOSE 3000
 CMD ["node", "server.js"]
