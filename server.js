@@ -1,59 +1,54 @@
 import express from "express";
 import fetch from "node-fetch";
-import dotenv from "dotenv";
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
-  res.send("MPD + Widevine Restream Server Running");
-});
+// Mapping IDs → source MPD URLs
+const STREAM_MAP = {
+  "1093": "http://143.44.136.67:6060/001/2/ch00000090990000001093/manifest.mpd?JITPDRMType=Widevine&virtualDomain=001.live_hls.zte.com&m4s_min=1",
+  "1286": "http://143.44.136.67:6060/001/2/ch00000090990000001286/manifest.mpd?JITPDRMType=Widevine&virtualDomain=001.live_hls.zte.com&m4s_min=1",
+};
 
-// ======================= RESTREAM MPD ===========================
-app.get("/restream", async (req, res) => {
-  try {
-    const mpd = req.query.mpd || process.env.MPD_URL;
-    const key = req.query.key || process.env.KEY_URL;
+// Generic fetch passthrough
+async function proxy(req, res, targetUrl) {
+    try {
+        const response = await fetch(targetUrl);
+        res.status(response.status);
 
-    if (!mpd) return res.status(400).send("Missing MPD URL (?mpd=)");
-    if (!key) return res.status(400).send("Missing KEY URL (?key=)");
+        // Copy headers
+        response.headers.forEach((v, k) => res.setHeader(k, v));
 
-    // Add key server info to HTTP header so players can use it
-    res.set("X-Widevine-License-Server", key);
-
-    const response = await fetch(mpd);
-
-    if (!response.ok) {
-      return res.status(500).send("Failed to fetch MPD");
+        // Stream response body
+        response.body.pipe(res);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Proxy Error");
     }
+}
 
-    res.set("Content-Type", "application/dash+xml");
-    response.body.pipe(res);
+// MPD Manifest
+app.get("/:id/manifest.mpd", async (req, res) => {
+    const id = req.params.id;
+    const source = STREAM_MAP[id];
 
-  } catch (err) {
-    res.status(500).send("Error: " + err.message);
-  }
+    if (!source) return res.status(404).send("Stream Not Found");
+
+    return proxy(req, res, source);
 });
 
-// ======================= KEY FORWARD ============================
-app.get("/key", async (req, res) => {
-  try {
-    const keyURL = req.query.url || process.env.KEY_URL;
+// Segment passthrough (*.m4s, *.mp4, *.init)
+app.get("/:id/:segment", async (req, res) => {
+    const id = req.params.id;
+    const segment = req.params.segment;
+    const base = STREAM_MAP[id];
 
-    if (!keyURL) return res.status(400).send("Missing key URL");
+    if (!base) return res.status(404).send("Stream Not Found");
 
-    const result = await fetch(keyURL, {
-      method: "POST",
-      body: req.body,
-      headers: req.headers
-    });
+    const sourceBase = base.split("manifest.mpd")[0]; // base path of segments
+    const targetUrl = sourceBase + segment;
 
-    res.set("Content-Type", result.headers.get("Content-Type"));
-    result.body.pipe(res);
-  } catch (err) {
-    res.status(500).send("Key Forward Error: " + err.message);
-  }
+    return proxy(req, res, targetUrl);
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Proxy running on port ${PORT}`));
