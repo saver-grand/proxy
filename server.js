@@ -7,7 +7,11 @@ const MAP = {
   "1143": "http://143.44.136.67:6060/001/2/ch00000090990000001143/manifest.mpd?JITPDRMType=Widevine&virtualDomain=001.live_hls.zte.com&m4s_min=1",
   "1090": "http://143.44.136.67:6060/001/2/ch00000090990000001090/manifest.mpd?JITPDRMType=Widevine&virtualDomain=001.live_hls.zte.com&m4s_min=1",
   "1286": "http://143.44.136.67:6060/001/2/ch00000090990000001286/manifest.mpd?JITPDRMType=Widevine&virtualDomain=001.live_hls.zte.com&m4s_min=1",
-  "gma": "http://vstream.vip:2889/live/Demostream/Demostream/2079.ts%7CUser-Agent=RM%20STREAM"  
+  "gma": "http://vstream.vip:2889/live/Demostream/Demostream/2079.ts%7CUser-Agent=RM%20STREAM",
+  "kapamilyahd": "http://vstream.vip:2889/live/Demostream/Demostream/2.ts%7CUser-Agent=RM%20STREAM",
+  "gtv": "http://vstream.vip:2889/live/Demostream/Demostream/151.ts%7CUser-Agent=RM%20STREAM"  
+
+  
 };
 
 // When someone opens your shortcut
